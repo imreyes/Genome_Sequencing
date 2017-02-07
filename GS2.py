@@ -8,7 +8,7 @@ Created on Thu Feb  2 14:03:40 2017
 """
 
 import GS1
-
+import copy as cp
 
 
 # Read De Bruijn graph into dictionary.
@@ -25,7 +25,8 @@ def ReadDB(graph):
     return DB
 
 
-
+   
+ 
 # Form Eulerian cycle from DB graph.
 def EulerianCycle(DB):
     DB = ReadDB(DB)                     # Process DB into dict; allows 'raw' input.
@@ -157,7 +158,6 @@ def PairedDeBruijn(k, patterns):
             DB[pre] = [suf]
         else:
             DB[pre].append(suf)
-    print(DB)
     return DB
 
 
@@ -165,17 +165,17 @@ def PairedDeBruijn(k, patterns):
 # Genome assembly using above functions.
 def StrReconstFromPair(k, d, patterns):
     DB = PairedDeBruijn(k, patterns)
-    path = EulerianPath(DB)
-    pre = path[0][:(k-1)]
-    suf = path[0][(1-k):]
-    for pair in path[1:]:
-        pre += pair[k-2]
-        suf += pair[-1]
-    print(pre)
-    print(' '*(k+d) + suf)
-    if pre[(k+d):] != suf[:-(k+d)]:
-        print('Unable to concatenate strings!')
-        return None
+    cache = cp.deepcopy(DB)
+    while True:
+        DB = cp.deepcopy(cache)
+        path = EulerianPath(DB)
+        pre = path[0][:(k-1)]
+        suf = path[0][(1-k):]
+        for pair in path[1:]:
+            pre += pair[k-2]
+            suf += pair[-1]
+        if pre[(k+d):] == suf[:-(k+d)]:
+            break
     genome = pre + suf[-(k+d):]
     return genome
 
